@@ -24,7 +24,6 @@ pipeline {
     ])
   }
 }
-Additional Verification:
             }
         }
         
