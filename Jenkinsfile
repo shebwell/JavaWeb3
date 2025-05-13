@@ -21,7 +21,6 @@ pipeline {
         [$class: 'CleanBeforeCheckout']  // Cleans workspace before checkout
       ],
       userRemoteConfigs: [[url: 'https://github.com/shebwell/JavaWeb3.git']]
-    ]
   }
 }
             }
