@@ -44,14 +44,20 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
-            environment {
-                PATH = "${env.DOCKER_PATH}"
-            }
+       stage('Push to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_HUB_CREDENTIALS) {
-                        docker.image("${DOCKER_IMAGE}:${env.BUILD_NUMBER}").push()
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-hub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PAT'
+                    )]) {
+                        sh """
+                            docker login -u $DOCKER_USER -p $DOCKER_PAT
+                            docker push ${DOCKER_IMAGE}:${VERSION}
+                            docker tag ${DOCKER_IMAGE}:${VERSION} ${DOCKER_IMAGE}:latest
+                            docker push ${DOCKER_IMAGE}:latest
+                        """
                     }
                 }
             }
