@@ -7,6 +7,8 @@ pipeline {
 }
     
     environment {
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/Docker.app/Contents/Resources/bin"
+        
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE = 'shebwell/javaweb3-calculator'  // Updated with your username
     }
