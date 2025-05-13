@@ -12,11 +12,19 @@ pipeline {
         DOCKER_PATH = '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/Docker.app/Contents/Resources/bin'
     }
     
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'master', 
-                     url: 'https://github.com/shebwell/JavaWeb3.git'
+    stage('Checkout') {
+  steps {
+    checkout([
+      $class: 'GitSCM',
+      branches: [[name: '*/master']],
+      extensions: [
+        [$class: 'CleanBeforeCheckout']  // Cleans workspace before checkout
+      ],
+      userRemoteConfigs: [[url: 'https://github.com/shebwell/JavaWeb3.git']]
+    ])
+  }
+}
+Additional Verification:
             }
         }
         
@@ -57,10 +65,6 @@ pipeline {
             echo 'Pipeline completed - cleaning up workspace'
             cleanWs()
         }
-        failure {
-            emailext body: 'Check ${BUILD_URL}', 
-                     subject: 'Pipeline Failed', 
-                     to: 'team@example.com'
         }
     }
 }
