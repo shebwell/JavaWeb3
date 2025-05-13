@@ -18,9 +18,7 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/master']],
-                    extensions: [
-                        [$class: 'CleanBeforeCheckout']
-                    ],
+                    extensions: [[$class: 'CleanBeforeCheckout']],
                     userRemoteConfigs: [[url: 'https://github.com/shebwell/JavaWeb3.git']]
                 ])
             }
@@ -44,7 +42,10 @@ pipeline {
             }
         }
 
-       stage('Push to Docker Hub') {
+        stage('Push to Docker Hub') {
+            environment {
+                PATH = "${env.DOCKER_PATH}"
+            }
             steps {
                 script {
                     withCredentials([usernamePassword(
@@ -54,8 +55,8 @@ pipeline {
                     )]) {
                         sh """
                             docker login -u $DOCKER_USER -p $DOCKER_PAT
-                            docker push ${DOCKER_IMAGE}:${VERSION}
-                            docker tag ${DOCKER_IMAGE}:${VERSION} ${DOCKER_IMAGE}:latest
+                            docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
+                            docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest
                             docker push ${DOCKER_IMAGE}:latest
                         """
                     }
@@ -66,7 +67,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline completed - cleaning up workspace'
+            echo 'Pipeline completed — cleaning up workspace'
             cleanWs()
         }
     }
