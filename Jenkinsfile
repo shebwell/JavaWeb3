@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials'
         DOCKER_IMAGE = 'shebwell/javaweb3-calculator'
         DOCKER_PATH = '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/Docker.app/Contents/Resources/bin'
     }
@@ -18,7 +18,9 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/master']],
-                    extensions: [[$class: 'CleanBeforeCheckout']],
+                    extensions: [
+                        [$class: 'CleanBeforeCheckout']
+                    ],
                     userRemoteConfigs: [[url: 'https://github.com/shebwell/JavaWeb3.git']]
                 ])
             }
@@ -48,17 +50,11 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PAT'
-                    )]) {
-                        sh """
-                            docker login -u $DOCKER_USER -p $DOCKER_PAT
-                            docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
-                            docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest
-                            docker push ${DOCKER_IMAGE}:latest
-                        """
+                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_HUB_CREDENTIALS}") {
+                        def appImage = docker.image("${DOCKER_IMAGE}:${env.BUILD_NUMBER}")
+                        appImage.push()
+                        appImage.tag('latest')
+                        docker.image("${DOCKER_IMAGE}:latest").push()
                     }
                 }
             }
